@@ -1,0 +1,256 @@
+---
+#linux container logs
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: linux-logs
+  labels:
+    name: linux-logs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: 1logmin-linux-replicas
+  namespace: linux-logs
+  labels:
+    Label1: d1
+    Label2: d2
+spec:
+    replicas: 2
+    selector:
+      matchLabels:
+        app: cimon-logging-app-linux
+    template:
+      metadata:
+        labels:
+          PodLabel1: p1
+          PodLabel2: p2
+          app: cimon-logging-app-linux
+      spec:
+        containers:
+        - name: ubuntu1804
+          image: ubuntu
+          command:
+            - "/bin/sh"
+            - "-c"
+            - >
+              start=1; while true; do sleep 60 && echo $start && start=$((start+1)); done;
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+---
+#linux no container logs
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: linux-no-logs
+  labels:
+    name: linux-vo-logs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: 1logmin-linux-replicas
+  namespace: linux-no-logs
+  labels:
+    Label1: d1
+    Label2: d2
+spec:
+    replicas: 2
+    selector:
+      matchLabels:
+        app: cimon-logging-app-linux
+    template:
+      metadata:
+        labels:
+          PodLabel1: p1
+          PodLabel2: p2
+          app: cimon-logging-app-linux
+      spec:
+        containers:
+        - name: ubuntu1804
+          image: ubuntu
+          command:
+            - "/bin/sh"
+            - "-c"
+            - >
+              start=1; while true; do sleep 60 && echo $start && start=$((start+1)); done;
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+---
+#linux container logs json
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: linux-logs-json
+  labels:
+    name: linux-logs-json
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: 1jsonlogmin-linux-replicas
+  namespace: linux-logs-json
+  labels:
+    Label1: d1
+    Label2: d2
+spec:
+    replicas: 2
+    selector:
+      matchLabels:
+        app: cimon-jsonlogging-app-linux
+    template:
+      metadata:
+        labels:
+          PodLabel1: p1
+          PodLabel2: p2
+          app: cimon-jsonlogging-app-linux
+      spec:
+        containers:
+        - name: ubuntu1804
+          image: ubuntu
+          command:
+            - "/bin/sh"
+            - "-c"
+            - >
+              while true; do sleep 60 && printf '{"subtype":"dev","@timestamp":"2020-07-01T09:55:06.546Z","vin":"","message":"{\\"eventName\\":\\"\\",\\"timestamp\\":1593597306546,\\"wmi\\":\\"W1K\\",\\"vds\\":\\"293890\\",\\"sessionId\\":\\"52\\",\\"profileHash\\":\\"\\"}","level":"INFO","app":"user-data-service","service_name":"","audit":"NO","mdc":{"X-B3-TraceId":"e9c145ed90341df2","X-Span-Export":"false","X-B3-SpanId":"e9c145ed90341df2"},"logger_name":"SYNC_EVENTS_LOGGER","thread_name":"ThreadPoolTaskExecutor-1","caller_class_name":"com.daimler.daivb.uds.userdata.bl.SyncEventsLogger","caller_method_name":"log","caller_file_name":"SyncEventsLogger.java","caller_line_number":"38"}\n' ; done;
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+---
+#linux-pv
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: linux-pv
+  labels:
+    name: linux-pv
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: azure-managed-disk
+  namespace: linux-pv
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: managed-premium
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linux-pv
+  namespace: linux-pv
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: testpv-linux
+  template:
+    metadata:
+      labels:
+        app: testpv-linux
+    spec:
+      containers:
+      - name: ubuntu1804
+        image: ubuntu
+        command:
+          - "/bin/sh"
+          - "-c"
+          - >
+            start=1; while true; do sleep 60 && start=$((start+1)); done;
+        volumeMounts:
+        - mountPath: "/mnt/azure"
+          name: volume
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: azure-managed-disk
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+---
+#linux container env vars
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: linux-envvar
+  labels:
+    name: linux-envvar
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: 1logmin-linux-replicas
+  namespace: linux-envvar
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cimon-envvar-app-linux
+  template:
+    metadata:
+      labels:
+        PodLabel1: p1
+        PodLabel2: p2
+        app: cimon-envvar-app-linux
+    spec:
+      containers:
+      - name: ubuntu1804
+        image: ubuntu
+        command:
+          - "/bin/sh"
+          - "-c"
+          - >
+            start=1; while true; do sleep 60 && start=$((start+1)); done;
+        env:
+        - name: linux-envvar1
+          value: "linux-envvalue1"
+        - name: linux-envvar2
+          value: "linux-envvalue2"
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+---
+#linux no container env vars
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: linux-no-envvar
+  labels:
+    name: linux-no-envvar
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: 1logmin-linux-replicas
+  namespace: linux-no-envvar
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cimon-envvar-app-linux
+  template:
+    metadata:
+      labels:
+        PodLabel1: p1
+        PodLabel2: p2
+        app: cimon-envvar-app-linux
+    spec:
+      containers:
+      - name: ubuntu1804
+        image: ubuntu
+        command:
+          - "/bin/sh"
+          - "-c"
+          - >
+            start=1; while true; do sleep 60 && start=$((start+1)); done;
+        env:
+        - name: linux-envvar3
+          value: "linux-envvalue3"
+        - name: AZMON_COLLECT_ENV
+          value: "False"
+        - name: linux-envvar4
+          value: "linux-envvalue4"
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+---
