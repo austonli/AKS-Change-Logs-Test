@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "aultestchange-30f7"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "aultestchange-30f7"
+  template:
+    metadata:
+      labels:
+        app: "aultestchange-30f7"
+    spec:
+      containers:
+        - name: "aultestchange-30f7"
+          image: "aultest.azurecr.io/aultestchange"
+          ports:
+          - containerPort: 80
